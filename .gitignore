@@ -1,0 +1,17 @@
+# Node
+node_modules/
+
+# Ambiente
+.env
+
+# Base de datos local
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Builds
+client/dist/
+
+# OS
+.DS_Store

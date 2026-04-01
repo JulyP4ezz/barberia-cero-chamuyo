@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg-color: #050505;
+  --surface-color: #111111;
+  --text-primary: #ededed;
+  --text-secondary: #888888;
+  --accent-color: #d8ff00; /* Neon yellow-green para el brutalismo */
+  --accent-hover: #b0d100;
+  --border-color: #222222;
+  --error-color: #ff3333;
+  --display-font: 'Anton', sans-serif;
+  --body-font: 'DM Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--body-font);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Textura de ruido de fondo sutil (Opcional, pero da el toque) */
+  background-image: radial-gradient(circle at 100% 100%, rgba(216, 255, 0, 0.03) 0%, transparent 40%),
+                    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.02) 0%, transparent 40%);
+}
+
+#root {
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 2rem;
+  border-bottom: 4px solid var(--accent-color);
+  padding-bottom: 1rem;
+}
+
+header h1 {
+  font-family: var(--display-font);
+  font-weight: 400;
+  font-size: 4rem;
+  line-height: 0.9;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+header p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.step-container {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Brutalist hard shadow */
+  box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+  font-family: var(--display-font);
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+button.option-btn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 1rem;
+  font-family: var(--body-font);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+button.option-btn:hover {
+  background-color: rgba(216, 255, 0, 0.1);
+  border-color: var(--accent-color);
+  transform: translateX(4px);
+}
+
+button.option-btn.selected {
+  border-color: var(--accent-color);
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  font-weight: bold;
+}
+
+button.primary-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  border: none;
+  padding: 1.2rem;
+  font-family: var(--display-font);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  margin-top: 1.5rem;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0px 0px rgba(255,255,255,0.1);
+}
+
+button.primary-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px rgba(255,255,255,0.2);
+}
+
+button.primary-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px 0px rgba(255,255,255,0.2);
+}
+
+button.primary-btn:disabled {
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.form-group input, .form-group select {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 1rem;
+  font-family: var(--body-font);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 1px var(--accent-color);
+}
+
+.success-message {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-color: var(--accent-color);
+}
+
+.success-message h2 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--accent-color);
+  border: none;
+}
+
+.success-message span {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* ADMIN PANEL STYLES */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 4px solid var(--accent-color);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  font-family: var(--display-font);
+  font-size: 3rem;
+  margin: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.turno-card {
+  background-color: var(--surface-color);
+  border-left: 4px solid var(--accent-color);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.turno-card:hover {
+  transform: translateX(5px);
+  background-color: rgba(255,255,255,0.02);
+}
+
+.turno-info h3 {
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+}
+
+.turno-info p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.turno-time {
+  background-color: var(--bg-color);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  font-family: var(--display-font);
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
