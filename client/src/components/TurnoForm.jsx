@@ -1,18 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 function TurnoForm({ barber, service, onSuccess, onBack }) {
   const [formData, setFormData] = useState({
     nombre_cliente: '',
     celular_cliente: '',
     fecha_turno: new Date().toISOString().split('T')[0], // Hoy por defecto
-    hora_turno: '10:00'
+    hora_turno: '' // Arranca vacío para que el cliente elija
   });
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Estados para manejar los horarios ocupados
+  const [occupiedHours, setOccupiedHours] = useState([]);
+  const [loadingHours, setLoadingHours] = useState(false);
 
-  // Generamos horas entre las 10:00 y las 19:00 (por hora como pediste)
+  // Generamos horas entre las 10:00 y las 19:00
   const availableHours = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"];
+
+  // Cuando cambia la fecha (o es la primera vez), le preguntamos al backend qué horas están tomadas
+  useEffect(() => {
+    setLoadingHours(true);
+    setOccupiedHours([]);
+    // Si cambia el día, blanqueamos la hora porque capaz eligió una que mañana está ocupada
+    setFormData(prev => ({ ...prev, hora_turno: '' }));
+
+    fetch(`${API_URL}/api/turnos?fecha=${formData.fecha_turno}&barbero_id=${barber.id}`)
+      .then(res => res.json())
+      .then(data => {
+        // 'data' trae todos los turnos de ese día para ese barbero. 
+        // Solo nos interesa armar una listita con las horas ('10:00', '15:00', etc)
+        const ocupadas = data.map(turno => turno.hora_turno);
+        setOccupiedHours(ocupadas);
+        setLoadingHours(false);
+      })
+      .catch(err => {
+        console.error("Error checkeando la libretita:", err);
+        setLoadingHours(false);
+      });
+  }, [formData.fecha_turno, barber.id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -21,8 +48,19 @@ function TurnoForm({ barber, service, onSuccess, onBack }) {
     });
   };
 
+  const handleHourSelect = (hora) => {
+    setFormData({ ...formData, hora_turno: hora });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validación de atolondrado: si no clickeó ninguna hora, le avisamos antes de pedirle al backend
+    if (!formData.hora_turno) {
+      setError("¡Ey fiera! Te olvidaste de elegir a qué hora venís. Seleccioná un horario.");
+      return;
+    }
+    
     setLoading(true);
     setError('');
 
@@ -33,27 +71,43 @@ function TurnoForm({ barber, service, onSuccess, onBack }) {
       servicio_id: service.id
     };
 
-    fetch('http://localhost:3001/api/turnos', {
+    fetch(`${API_URL}/api/turnos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
     })
-    .then(res => {
-      if (!res.ok) throw new Error("Aflojale, hubo un bardo al guardar el turno.");
-      return res.json();
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Aflojale, hubo un bardo al guardar el turno.");
+      }
+      return data;
     })
     .then(data => {
+      // Leemos los tickets que ya había guardados (o un array vacío si era la primera vez)
+      const ticketsGuardados = JSON.parse(localStorage.getItem('misTurnos') || '[]');
+      
+      // Armamos el nuevo ticket con toda la info que vamos a necesitar para mostrarlo
+      const nuevoTicket = {
+        token_cliente: data.token_cliente,
+        nombre_cliente: formData.nombre_cliente,
+        fecha_turno: formData.fecha_turno,
+        hora_turno: formData.hora_turno,
+        barbero_nombre: barber.nombre,
+        servicio_nombre: service.nombre,
+      };
+      
+      // Lo sumamos a la lista y lo guardamos todo de vuelta (sin pisar nada)
+      ticketsGuardados.push(nuevoTicket);
+      localStorage.setItem('misTurnos', JSON.stringify(ticketsGuardados));
       setLoading(false);
-      onSuccess(); // Mandamos al pibe a la pantalla de éxito
+      onSuccess(); // Éxito de verdad, brindamos con mate
     })
     .catch(err => {
-      console.error(err);
-      setError("Ups! Falló la anotación en la libretita digital. Avisale al barbero.");
-      // Comentar la línea de abajo si querés forzar error real, 
-      // Si el server no anda pasa igual para demostrar que el frontend funciona
-      onSuccess();
+      console.error("Bardo en el fetch:", err);
+      setError(err.message); 
       setLoading(false);
     });
   };
@@ -95,35 +149,60 @@ function TurnoForm({ barber, service, onSuccess, onBack }) {
           />
         </div>
 
-        <div className="form-group" style={{display: 'flex', flexDirection: 'row', gap: '1rem'}}>
-          <div style={{flex: 1}}>
-            <label htmlFor="fecha_turno">Día</label>
-            <input 
-              type="date" 
-              id="fecha_turno"
-              name="fecha_turno"
-              required
-              min={new Date().toISOString().split('T')[0]}
-              value={formData.fecha_turno}
-              onChange={handleChange}
-              style={{width: '100%'}}
-            />
-          </div>
-          <div style={{flex: 1}}>
-            <label htmlFor="hora_turno">Hora</label>
-            <select 
-              id="hora_turno"
-              name="hora_turno" 
-              required
-              value={formData.hora_turno}
-              onChange={handleChange}
-              style={{width: '100%'}}
-            >
-              {availableHours.map(h => (
-                <option key={h} value={h}>{h} hs</option>
-              ))}
-            </select>
-          </div>
+        <div className="form-group">
+          <label htmlFor="fecha_turno">Día</label>
+          <input 
+            type="date" 
+            id="fecha_turno"
+            name="fecha_turno"
+            required
+            min={new Date().toISOString().split('T')[0]}
+            value={formData.fecha_turno}
+            onChange={handleChange}
+            style={{width: '100%'}}
+          />
+        </div>
+
+        <div className="form-group" style={{marginTop: '0.5rem'}}>
+          <label>Horarios Disponibles</label>
+          {loadingHours ? (
+            <p style={{fontSize: '0.9rem', color: 'var(--text-secondary)'}}>Chusmeando la libretita de turnos...</p>
+          ) : (
+            <div style={{
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(3, 1fr)', 
+              gap: '0.5rem', 
+              marginTop: '0.5rem'
+            }}>
+              {availableHours.map(h => {
+                const isOccupied = occupiedHours.includes(h);
+                const isSelected = formData.hora_turno === h;
+                
+                return (
+                  <button
+                    key={h}
+                    type="button"
+                    disabled={isOccupied}
+                    onClick={() => handleHourSelect(h)}
+                    style={{
+                      padding: '0.75rem 0.5rem',
+                      backgroundColor: isSelected ? 'var(--accent-color)' : 'transparent',
+                      color: isSelected ? 'var(--bg-color)' : (isOccupied ? '#444' : 'var(--text-primary)'),
+                      border: `1px solid ${isOccupied ? '#222' : (isSelected ? 'var(--accent-color)' : 'var(--border-color)')}`,
+                      cursor: isOccupied ? 'not-allowed' : 'pointer',
+                      fontWeight: isSelected ? 'bold' : 'normal',
+                      textDecoration: isOccupied ? 'line-through' : 'none',
+                      fontFamily: 'var(--body-font)',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {h}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {error && <div style={{color: 'var(--error-color)', marginTop: '1rem', fontSize: '0.9rem'}}>{error}</div>}
@@ -132,7 +211,7 @@ function TurnoForm({ barber, service, onSuccess, onBack }) {
           <button type="button" className="option-btn" onClick={onBack} style={{flex: 1, marginTop: 0}}>
             Atrás
           </button>
-          <button type="submit" className="primary-btn" disabled={loading} style={{flex: 2, marginTop: 0}}>
+          <button type="submit" className="primary-btn" disabled={loading || loadingHours} style={{flex: 2, marginTop: 0}}>
             {loading ? "Anotando..." : "Confirmar Turno"}
           </button>
         </div>

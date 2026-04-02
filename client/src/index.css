@@ -266,3 +266,30 @@ button.primary-btn:disabled {
   font-size: 1.5rem;
   letter-spacing: 1px;
 }
+
+/* BOTÓN DE BORRAR CON ONDA */
+.btn-delete {
+  background: transparent;
+  border: 1px solid var(--error-color);
+  color: var(--error-color);
+  padding: 0.4rem 0.8rem;
+  font-family: var(--body-font);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 0.5rem;
+}
+
+.btn-delete:hover {
+  background-color: var(--error-color);
+  color: white;
+  box-shadow: 4px 4px 0px 0px rgba(255, 51, 51, 0.3);
+  transform: translate(-2px, -2px);
+}
+
+.btn-delete:active {
+  transform: translate(0, 0);
+  box-shadow: none;
+}

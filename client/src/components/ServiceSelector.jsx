@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 function ServiceSelector({ selectedService, onSelect, onNext, onBack }) {
   const [servicios, setServicios] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/servicios')
+    fetch(`${API_URL}/api/servicios`)
       .then(res => res.json())
       .then(data => {
         setServicios(data);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 function BarberSelector({ selectedBarber, onSelect, onNext }) {
   const [barberos, setBarberos] = useState([]);
@@ -6,7 +7,7 @@ function BarberSelector({ selectedBarber, onSelect, onNext }) {
 
   // Pedimos al backend quiénes cortan el pelo
   useEffect(() => {
-    fetch('http://localhost:3001/api/barberos')
+    fetch(`${API_URL}/api/barberos`)
       .then(res => res.json())
       .then(data => {
         setBarberos(data);

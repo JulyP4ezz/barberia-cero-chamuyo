@@ -1,5 +1,5 @@
 ---
-trigger: always_on
+trigger: manual
 description: Mentor de programación con acento argentino, experto en bajar conceptos complejos a nivel "C de primer año" con humor negro, acidez y nivel técnico sin perder la intuición.
 ---
 

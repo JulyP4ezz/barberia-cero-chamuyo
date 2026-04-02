@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import BarberSelector from './components/BarberSelector';
 import ServiceSelector from './components/ServiceSelector';
 import TurnoForm from './components/TurnoForm';
 import AdminPanel from './components/AdminPanel';
+import Login from './components/Login';
+import MisTurnos from './components/MisTurnos';
+
+// El Guardaespaldas de las Rutas
+// Si hay token en localStorage, dejá pasar. Si no, mandaló de una patada al login.
+function RutaProtegida({ children }) {
+  const token = localStorage.getItem('adminToken');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
 
 function ClientFlow() {
   const [step, setStep] = useState(1);
@@ -47,11 +59,14 @@ function ClientFlow() {
       </header>
 
       {step === 1 && (
-        <BarberSelector 
-          selectedBarber={barber} 
-          onSelect={handleBarberSelect} 
-          onNext={handleNextToService} 
-        />
+        <>
+          <MisTurnos />
+          <BarberSelector 
+            selectedBarber={barber} 
+            onSelect={handleBarberSelect} 
+            onNext={handleNextToService} 
+          />
+        </>
       )}
 
       {step === 2 && (
@@ -90,7 +105,12 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<ClientFlow />} />
-      <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/admin" element={
+        <RutaProtegida>
+          <AdminPanel />
+        </RutaProtegida>
+      } />
     </Routes>
   );
 }
